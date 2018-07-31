@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html><head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>上传图片</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.min.js"></script>
+</head>
+
+<body>
+    <div id="uploader-demo">
+        <button id="filePicker">选择图片</button>
+        <div id="fileList" class="uploader-list"></div>
+    </div>
+    <script>
+        /** 
+         * 使用webuploader + 七牛云 实现图片上传demo
+         * 官方文档 http://fex.baidu.com/webuploader/doc/index.html 
+         * 日期:2018.06.05
+         * **/
+
+        $.get("sourse/autoload.php", init);
+
+        function init(token_str) {
+            var $list = $("#fileList");
+            var uploader = WebUploader.create({
+                formData: { token: token_str, key: "图片名字,动态获取" },
+                // 选完文件后，是否自动上传。
+                auto: true,
+                // 图片质量，只有type为`image/jpeg`的时候才有效。 百分比，默认90%
+                compress:{quality: 80},
+                // 文件接收服务端。
+                server: 'http://up.qiniu.com/qiniu/autoload.php',
+                // 选择文件的按钮。可选。(会根据按钮位置创建一个触控区域，但区域不会自动更新，所以按钮位置变了就失效了)
+                pick: '#filePicker',
+                // 只允许选择图片文件。
+                accept: {
+                    title: 'Images',
+                    extensions: 'gif,jpg,jpeg,bmp,png',
+                    mimeTypes: 'image/*'
+                }
+            });
+
+            // 当有文件添加进来的时候
+            uploader.on('fileQueued', function (file) {
+
+                //七牛云使用key作為文件路径+文件名（** 這裡使用源文件作为key的方式仅用于demo。**）
+                uploader.options.formData.key = "demo/" + file.name;
+
+                var $li = $(
+                    '<div id="' + file.id + '" class="file-item thumbnail">' +
+                    '<img>' +
+                    '<div class="info">' + file.name + '</div>' +
+                    '</div>'
+                ),
+                    $img = $li.find('img');
+                $list.append($li);
+                // 创建缩略图，预览的是本地文件，不是上传后的文件
+                var thumbnailWidth = thumbnailHeight = 100; //缩略图高宽
+                uploader.makeThumb(file, function (error, src) {
+                    if (error) {
+                        $img.replaceWith('<span>不能预览</span>');
+                        return;
+                    }
+                    $img.attr('src', src);
+                }, thumbnailWidth, thumbnailHeight);
+            });
+
+            // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+            uploader.on('uploadSuccess', function (file) {
+                $('#' + file.id).addClass('upload-state-done');
+                alert("上传成功");
+            });
+
+            // 文件上传失败，显示上传出错。
+            uploader.on('uploadError', function (file) {
+                var $li = $('#' + file.id), $error = $li.find('div.error');
+                // 避免重复创建
+                if (!$error.length) $error = $('<div class="error"></div>').appendTo($li);
+                $error.text('上传失败');
+            });
+
+        }
+    </script>
+</body>
+
+</html>
