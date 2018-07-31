@@ -18,6 +18,6 @@ require_once  __DIR__ . '/src/Qiniu/functions.php';
  **/
 use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
-$auth = new Auth('Fu7dbUegG3UAWStombRDKeZixMwZgK_pPN-wZwr8','ui0yEbUf-pJr3YvxTiepu9kXC5_uCigIRYPhwC8u');
-echo $auth->uploadToken('rxqdd');
+$auth = new Auth('自己的Access_Key','自己的Secret_Key');
+echo $auth->uploadToken('自己的Bucket_Name');
 
